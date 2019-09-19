@@ -1,11 +1,12 @@
+import 'dart:io';
+
+import 'package:auth/model/user.dart';
+import 'package:auth/network/exception/login.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'dart:convert';
-
-final loginUrl = "http://localhost:8000/api/user/login";
-
+import 'package:auth/store/user.dart';
+import 'package:provider/provider.dart';
 
 class Login extends StatefulWidget {
   @override
@@ -22,7 +23,6 @@ class LoginState extends State<Login> {
   void initState() {
     super.initState();
     print("Login Screen");
-
   }
 
   @override
@@ -73,38 +73,28 @@ class LoginState extends State<Login> {
     FormState form = _formKey.currentState;
     if (form.validate()) {
       form.save();
-      getHttp();
+      userLogin();
     }
   }
 
-  void getHttp() async {
-    try {
-      Response response = await Dio().post(
-          loginUrl,
-          data: {"username": _username, "password": _password});
-      // store the token in Secure Storage
-      var token = response.data['token'];
-      var storage = new FlutterSecureStorage();
-      await storage.write(key: "token", value: token);
-
-      Navigator.pushReplacementNamed(context, 'index');
-    } on DioError catch (e) {
-      // TODO: Change into model classes method for scalable project
-      // Manual serializing with jsonDecode method is easy but it would lose all type check
-
-      // Error check
-      // Unable to send the request, because of internet access error
-      if (e.response != null) {
-        var message = e.response.data['message'];
-        showDialog(
-            context: context,
-            builder: (context) => AlertDialog(content: Text(message)));
-      } else {
-        var message = "Unable to send request";
-        showDialog(
-            context: context,
-            builder: (context) => AlertDialog(content: Text(message)));
-      }
+  void userLogin() async{
+    try{
+      var user = Provider.of<UserStore>(context);
+      final credential = Credential(password: _password, username: _username);
+      await user.login(credential);
+      Navigator.pushNamed(context, "index");
     }
+    on NetworkException catch(e){
+      popupError(e.message);
+    }
+    on AuthException catch(e){
+      popupError(e.message);
+    }
+  }
+  
+  void popupError(String errorMessage){
+    showDialog(
+      context: context,
+      builder: (context)=> AlertDialog(content: Text(errorMessage)));
   }
 }

@@ -2,12 +2,12 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-class Entry extends StatefulWidget {
+class Splash extends StatefulWidget {
   @override
-  EntryState createState() => EntryState();
+  SplashState createState() => SplashState();
 }
 
-class EntryState extends State<Entry> {
+class SplashState extends State<Splash> {
   @override
   void initState() {
     super.initState();

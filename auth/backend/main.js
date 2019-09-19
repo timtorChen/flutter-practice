@@ -8,22 +8,20 @@ var jwt = require('jsonwebtoken')
 app.use(express.json());
 
 
+const mockedUsername = 'spongebob'
+const mockedPassword = '123'
+
+const data = {
+    username: mockedUsername,
+    fullname: 'SpongeBob Squarepants',
+    height: 4,
+    width: 2
+}
 
 // 400: Bad Request, body parameter error
 // 401: Unauthorized, credential invalid
 // 403: Forbidden, already login, but access area is not allowed
 app.post('/api/user/login', (req, res) => {
-
-
-    const mockedUsername = 'spongebob'
-    const mockedPassword = '123'
-
-    const data = {
-        username: mockedUsername,
-        fullname: 'SpongeBob Squarepants',
-        height: '4',
-        width: '2'
-    }
 
     const username = req.body.username,
           password = req.body.password
@@ -36,16 +34,16 @@ app.post('/api/user/login', (req, res) => {
 
         if (success) {
             const token = jwt.sign(data, config.secret)
-            res.json({ success: true, token: token })
+            res.json({ token: token })
         }
         else {
             res.status(401)
-            res.json({ success: false, message: 'Wrong username or password' })
+            res.json({ message: 'Wrong username or password' })
 
         }
     }else{
         res.status(400)
-        res.json({success: false, message: 'Wrong parameter'})
+        res.json({ message: 'Wrong parameter' })
     }
 })
 
@@ -59,14 +57,14 @@ app.get('/api/user', (req, res) => {
         jwt.verify(token, config.secret,(error, decoded)=>{
             if(error){
                 res.status(401)
-                res.json({success: false, message: 'Unable to resolve token'})
+                res.json({ message: 'Unable to resolve token' })
             }else{
-                res.json({success: true, user: decoded})
+                setTimeout(()=> res.json(data) , 5000)
             }
         })
     }else{
         res.status(401)
-        res.json({success: false, message: 'Auth token is not provided'})
+        res.json({ message: 'Auth token is not provided' })
     }
 
 })
